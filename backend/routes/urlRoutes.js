@@ -1,58 +1,44 @@
 const express = require("express");
-const shortid = require("shortid");
-const Url = require("../models/Url");
-
 const router = express.Router();
+const Url = require("../models/Url");
+const shortid = require("shortid");
 
+// Create short URL
 router.post("/shorten", async (req, res) => {
   try {
     let { originalUrl } = req.body;
 
-    if (!originalUrl) {
-      return res.status(400).json({ message: "URL is required" });
-    }
-
-    // Add https:// if missing
+    // Add protocol if missing
     if (!originalUrl.startsWith("http://") && !originalUrl.startsWith("https://")) {
       originalUrl = "https://" + originalUrl;
     }
 
-    const shortId = shortid.generate();
+    const shortId = shortid.generate(); // generate unique ID
 
-    const newUrl = new Url({
-      originalUrl,
-      shortId
-    });
-
+    const newUrl = new Url({ originalUrl, shortId });
     await newUrl.save();
 
-    res.json({
-      shortUrl: `${process.env.BASE_URL}/${shortId}`
-    });
-
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.json({ shortUrl: `${process.env.BASE_URL}/${shortId}` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
   }
 });
 
-
-// Redirect to Original URL
+// Redirect
 router.get("/:shortId", async (req, res) => {
   try {
     const { shortId } = req.params;
+    const urlData = await Url.findOne({ shortId });
 
-    const url = await Url.findOne({ shortId });
-
-    if (url) {
-      url.clicks++;
-      await url.save();
-      return res.redirect(url.originalUrl);
-    } else {
+    if (!urlData) {
       return res.status(404).json({ message: "URL not found" });
     }
 
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    return res.redirect(urlData.originalUrl);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
   }
 });
 

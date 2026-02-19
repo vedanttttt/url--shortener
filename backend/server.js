@@ -14,27 +14,21 @@ app.use(express.json());
 
 // Routes
 const urlRoutes = require("./routes/urlRoutes");
-app.use("/api", urlRoutes); // API routes prefixed with /api
+app.use("/api", urlRoutes);  // API prefix
 
-// Serve frontend static files
-const frontendPath = path.join(__dirname, "../frontend");
-app.use(express.static(frontendPath));
+// Serve static frontend files
+app.use(express.static(path.join(__dirname, "../frontend")));
 
-// Catch-all route for SPA (works with all Express versions)
-app.get(/^\/(?!api).*$/, (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
+// Catch-all for SPA routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/index.html"));
 });
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+// DB connect
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log("Mongo Error:", err));
+  .catch(err => console.error("Mongo Error:", err));
 
-// Start Server
+// Start listening
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
