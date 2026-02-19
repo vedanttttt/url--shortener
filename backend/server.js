@@ -14,14 +14,14 @@ app.use(express.json());
 
 // Routes
 const urlRoutes = require("./routes/urlRoutes");
-app.use("/api", urlRoutes); // all API routes prefixed with /api
+app.use("/api", urlRoutes); // API routes prefixed with /api
 
 // Serve frontend static files
 const frontendPath = path.join(__dirname, "../frontend");
 app.use(express.static(frontendPath));
 
-// Catch-all for SPA (after API routes)
-app.get('*', function(req, res) {
+// Catch-all route for SPA (works with all Express versions)
+app.get(/^\/(?!api).*$/, (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
