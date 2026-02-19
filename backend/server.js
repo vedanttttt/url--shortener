@@ -14,16 +14,15 @@ app.use(express.json());
 
 // Routes
 const urlRoutes = require("./routes/urlRoutes");
-app.use("/api", urlRoutes); // All API routes prefixed with /api
+app.use("/api", urlRoutes); // API prefixed with /api
 
 // Serve frontend static files
-// Make sure your frontend folder is copied inside backend (or adjust path)
 const frontendPath = path.join(__dirname, "../frontend");
 app.use(express.static(frontendPath));
 
-// Catch-all to serve index.html for React or single-page app routing
-app.get("/*", (req, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
+// Catch-all for frontend routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 // MongoDB Connection
@@ -36,7 +35,6 @@ const connectDB = async () => {
     console.log("MongoDB Connected");
   } catch (err) {
     console.error("MongoDB connection error:", err);
-    // Retry connection every 5s
     setTimeout(connectDB, 5000);
   }
 };
