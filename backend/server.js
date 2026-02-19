@@ -13,8 +13,11 @@ app.use(cors());
 app.use(express.json());
 
 // API Routes
-const urlRoutes = require("./routes/urlRoutes");
-app.use("/api", urlRoutes);
+const apiRoutes = require("./routes/urlRoutes");
+app.use("/api", apiRoutes); // for POST /api/shorten
+
+// Redirect Route (short URL)
+app.use("/", apiRoutes); // handles GET /:shortId for redirect
 
 // Serve frontend
 app.use(express.static(path.join(__dirname, "../frontend")));

@@ -14,18 +14,19 @@ router.post("/shorten", async (req, res) => {
     }
 
     const shortId = shortid.generate(); // generate unique ID
-
     const newUrl = new Url({ originalUrl, shortId });
     await newUrl.save();
 
-    res.json({ shortUrl: `${process.env.BASE_URL}/${shortId}` });
+    // Remove accidental double slashes
+    const base = process.env.BASE_URL.replace(/\/+$/, "");
+    res.json({ shortUrl: `${base}/${shortId}` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
 });
 
-// Redirect
+// Redirect short URL (outside /api)
 router.get("/:shortId", async (req, res) => {
   try {
     const { shortId } = req.params;
@@ -35,7 +36,13 @@ router.get("/:shortId", async (req, res) => {
       return res.status(404).json({ message: "URL not found" });
     }
 
-    return res.redirect(urlData.originalUrl);
+    // Ensure protocol exists
+    let destination = urlData.originalUrl;
+    if (!/^https?:\/\//i.test(destination)) {
+      destination = "https://" + destination;
+    }
+
+    return res.redirect(destination);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server Error" });
